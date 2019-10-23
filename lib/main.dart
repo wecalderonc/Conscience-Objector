@@ -5,15 +5,49 @@ void main() => runApp(MyApp());
 
 class RandomWordsState extends State<RandomWords> {
   final _suggestions = <WordPair>[];
-  final _saved=Set<WordPair>()
+  final _saved = Set<WordPair>();
   final _biggerFont = const TextStyle(fontSize: 18.0);
+  void _pushSaved(){
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context){
+          final Iterable<ListTile> titles=_saved.map(
+            (WordPair pair){
+              return ListTile(
+                title: Text(
+                  pair.asPascalCase,
+                  style: _biggerFont,
+                ),
+              );
+            },
+          );
+        final List<Widget> divided=ListTile
+          .divideTiles(
+            context: context,
+            tiles: titles,
+          )
+          .toList();
+          return Scaffold(
+            appBar: AppBar(
+              title: Text('Saved Suggestions'),
+            ),
+            body: ListView(children: divided),
+          );
+        },
+        ),
+    );
+  }
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar:AppBar(
-      title: Text('Startup name generator'),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Startup name generator'),
+        actions: <Widget>[
+          IconButton(icon:Icon(Icons.list), onPressed: _pushSaved),
+        ],
       ),
-      body:_buildSuggestions(),
-      );
+      body: _buildSuggestions(),
+    );
   }
 
   Widget _buildSuggestions() {
@@ -29,14 +63,28 @@ class RandomWordsState extends State<RandomWords> {
           return _buildRow(_suggestions[index]);
         });
   }
-  Widget _buildRow(WordPair pair){
-    final bool alreadySaved=_saved.contains(pair);
+
+  Widget _buildRow(WordPair pair) {
+    final bool alreadySaved = _saved.contains(pair);
     return ListTile(
-      title:Text(
+      title: Text(
         pair.asPascalCase,
         style: _biggerFont,
       ),
-      );
+      trailing: Icon(
+        alreadySaved ? Icons.favorite : Icons.favorite_border,
+        color: alreadySaved ? Colors.red : null,
+      ),
+      onTap:(){
+        setState(() {
+          if(alreadySaved){
+            _saved.remove(pair);
+          }else{
+            _saved.add(pair);
+          }
+        });
+      }
+    );
   }
 }
 
@@ -48,9 +96,11 @@ class RandomWords extends StatefulWidget {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final wordPair = WordPair.random();
     return MaterialApp(
       title: 'Startup name generator',
+      theme: ThemeData(
+        primaryColor:  Colors.white,
+      ),
       home: RandomWords(),
     );
   }
